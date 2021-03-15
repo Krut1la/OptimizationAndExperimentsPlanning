@@ -1,7 +1,7 @@
 """
-Prog:   Lab3.py
+Prog:   Lab1.py
 Auth:   Oleksii Krutko, IO-z91
-Desc:   Algorithms Lab 3. Var 10. 2021
+Desc:   Optimization and experiment planning. Lab 1. Var 10. 2021
 """
 
 import matplotlib.pyplot as plt
@@ -131,8 +131,7 @@ def main():
 
     plt.show()
 
-    # fig_page2.savefig("E:\Krut1la\KPI\Grade 2\Part 2\Algorithms\Labs\Lab3\lab3_sin_fig_1.png")
-    # fig_page1.savefig("E:\Krut1la\KPI\Grade 2\Part 2\Algorithms\Labs\Lab3\lab3_sin_fig_2.png")
+    # fig_page1.savefig("./input_files/Lab1_img_png")
 
 
 main()
