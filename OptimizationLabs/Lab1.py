@@ -6,6 +6,7 @@ Desc:   Optimization and experiment planning. Lab 1. Var 10. 2021
 
 import matplotlib.pyplot as plt
 import numpy as np
+import time
 
 from Input import InputError
 from Input import get_input_source
@@ -72,6 +73,8 @@ def main():
     # n = 8
     # x_max = 20.0
 
+    start_time_ns = time.process_time()
+
     x1 = np.random.random(n) * x_max
     x2 = np.random.random(n) * x_max
     x3 = np.random.random(n) * x_max
@@ -93,6 +96,10 @@ def main():
     y_0 = a[0] + a[1]*x1_0 + a[2]*x2_0 + a[3]*x3_0
 
     target_point = y.index(min(y))
+
+    end_time_ns = time.process_time()
+
+    print("Solving took {:.5f} ms".format((end_time_ns - start_time_ns)*1000))
 
     axs_page1, fig_page1 = create_axs("Y = {:.2f} + {:.2f}X1 + {:.2f}X2 + {:.2f}X3"
                                       .format(a[0], a[1], a[2], a[3]), r'$min(Y)$', x_max)
