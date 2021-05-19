@@ -111,7 +111,22 @@ def main():
 
     standard_deviation = math.sqrt((2 * (2 * m - 2)) / (m * (m - 4)))
 
-    Fuv = [dispersion[0] / dispersion[1], dispersion[2] / dispersion[0], dispersion[2] / dispersion[1]]
+    Fuv = []
+
+    if dispersion[0] > dispersion[1]:
+        Fuv.append(dispersion[0] / dispersion[1])
+    else:
+        Fuv.append(dispersion[1] / dispersion[0])
+
+    if dispersion[2] > dispersion[0]:
+        Fuv.append(dispersion[2] / dispersion[0])
+    else:
+        Fuv.append(dispersion[0] / dispersion[2])
+
+    if dispersion[2] > dispersion[1]:
+        Fuv.append(dispersion[2] / dispersion[1])
+    else:
+        Fuv.append(dispersion[1] / dispersion[2])
 
     Eta_uv = [((m - 2) / m) * Fuv[i] for i in range(n)]
     Rub = [math.fabs(Eta_uv[i] - 1) / standard_deviation for i in range(n)]
