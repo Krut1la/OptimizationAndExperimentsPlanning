@@ -55,6 +55,79 @@ def create_axs(regression_equation):
     return axs_page1, fig_page1
 
 
+def make_experiments(m_start, n, y_min, y_max):
+
+    R_check_90 = {
+        2: 1.68,
+        6: 2.0,
+        8: 2.17,
+        10: 2.29,
+        12: 2.39,
+        15: 2.49,
+        20: 2.62,
+    }
+
+    m_max = max(R_check_90.keys())
+
+    y = [y_min + np.random.random(m_start) * math.fabs((y_max - y_min)) for i in range(n)]
+
+    for m in range(m_start, m_max):
+
+        # Check Romanovsky criteria
+        y_avr = [sum(y[i]) / m for i in range(n)]
+        dispersion = []
+        for i in range(n):
+            S = 0.0
+            for j in range(m):
+                S = S + (y[i][j] - y_avr[i]) ** 2
+
+            dispersion.append(S / m)
+
+        standard_deviation = math.sqrt((2 * (2 * m - 2)) / (m * (m - 4)))
+
+        Fuv = []
+
+        if dispersion[0] > dispersion[1]:
+            Fuv.append(dispersion[0] / dispersion[1])
+        else:
+            Fuv.append(dispersion[1] / dispersion[0])
+
+        if dispersion[2] > dispersion[0]:
+            Fuv.append(dispersion[2] / dispersion[0])
+        else:
+            Fuv.append(dispersion[0] / dispersion[2])
+
+        if dispersion[2] > dispersion[1]:
+            Fuv.append(dispersion[2] / dispersion[1])
+        else:
+            Fuv.append(dispersion[1] / dispersion[2])
+
+        Eta_uv = [((m - 2) / m) * Fuv[i] for i in range(n)]
+        Rub = [math.fabs(Eta_uv[i] - 1) / standard_deviation for i in range(n)]
+
+        next_m = next(x for x in R_check_90.keys() if x >= m)
+
+        all_met = True
+        for i in range(n):
+            if Rub[i] > R_check_90[next_m]:
+                all_met = False
+                break
+
+        if not all_met:
+            print("Romanovsky criteria was not met for m={}. Increasing m up to {}.".format(m, m+1))
+            b = np.zeros((n, m+1))
+            b[:, :-1] = y
+            for i in range(n):
+                b[i][m] = y_min + np.random.random(1) * math.fabs((y_max - y_min))
+
+            y = b
+        else:
+            print("Romanovsky criteria is met for m={}.".format(m))
+            return y_avr, y, m
+
+    raise Exception("Max m={} reached. Romanovsky criteria still was not met.".format(m_max))
+
+
 def main():
     print("Lab 2. Two-factor experiment. Var. 10")
 
@@ -97,58 +170,7 @@ def main():
     x1_norm = [(x - x1_0) / x1_dx for x in x1]
     x2_norm = [(x - x2_0) / x2_dx for x in x2]
 
-    y = [y_min + np.random.random(m) * math.fabs((y_max - y_min)) for i in range(n)]
-
-    # Check Romanovsky criteria
-    y_avr = [sum(y[i]) / m for i in range(n)]
-    dispersion = []
-    for i in range(n):
-        S = 0.0
-        for j in range(m):
-            S = S + (y[i][j] - y_avr[i]) ** 2
-
-        dispersion.append(S / m)
-
-    standard_deviation = math.sqrt((2 * (2 * m - 2)) / (m * (m - 4)))
-
-    Fuv = []
-
-    if dispersion[0] > dispersion[1]:
-        Fuv.append(dispersion[0] / dispersion[1])
-    else:
-        Fuv.append(dispersion[1] / dispersion[0])
-
-    if dispersion[2] > dispersion[0]:
-        Fuv.append(dispersion[2] / dispersion[0])
-    else:
-        Fuv.append(dispersion[0] / dispersion[2])
-
-    if dispersion[2] > dispersion[1]:
-        Fuv.append(dispersion[2] / dispersion[1])
-    else:
-        Fuv.append(dispersion[1] / dispersion[2])
-
-    Eta_uv = [((m - 2) / m) * Fuv[i] for i in range(n)]
-    Rub = [math.fabs(Eta_uv[i] - 1) / standard_deviation for i in range(n)]
-
-    R_check_90 = {
-        2: 1.68,
-        6: 2.0,
-        8: 2.17,
-        10: 2.29,
-        12: 2.39,
-        15: 2.49,
-        20: 2.62,
-    }
-
-    next_m = next(x for x in R_check_90.keys() if x >= m)
-
-    for i in range(n):
-        if Rub[i] > R_check_90[next_m]:
-            print("Romanovsky criteria was not met. Please run again or increase m.")
-            return
-
-    print("Romanovsky criteria is met.")
+    y_avr, y, m = make_experiments(m, n, y_min, y_max)
 
     # Calculate regression equation coefficients
     m_x_1 = sum(x1_norm) / n
@@ -198,7 +220,7 @@ def main():
     axs_page1, fig_page1 = create_axs(regression_equation)
 
     # draw table
-    table_data = [["" for j in range(7)] for i in range(n)]
+    table_data = [["" for j in range(2+m)] for i in range(n)]
 
     for i in range(n):
         table_data[i][0] = "{:.2f}".format(x1_norm[i])
@@ -208,7 +230,10 @@ def main():
             table_data[i][j + 2] = "{:.2f}".format(y[i][j])
 
     axs_page1.axis('off')
-    col_label = (r'$X1$', r'$X2$', r'$Y1$', r'$Y2$', r'$Y3$', r'$Y4$', r'$Y5$')
+    col_label = [r'$X1$', r'$X2$']
+    for i in range(m):
+        col_label.append(r'$Y{}$'.format(i + 1))
+
     the_table = axs_page1.table(cellText=table_data, colLabels=col_label, loc='best')
     the_table.set_fontsize(20)
     the_table.scale(1.0, 4.0)
